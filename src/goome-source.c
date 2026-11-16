@@ -388,6 +388,22 @@ static int special_key(uint32_t vkey)
     return 0;
 }
 
+static void send_text(void *data, const char *t)
+{
+    size_t len = strlen(t);
+    while (len) {
+        goome_event e;
+        memset(&e, 0, sizeof(e));
+        e.type = GOOME_TEXT;
+        size_t n = len < sizeof(e.msg) - 1 ? len : sizeof(e.msg) - 1;
+        while (n < len && n && ((unsigned char)t[n] & 0xC0) == 0x80) n--;
+        if (!n) return;
+        memcpy(e.msg, t, n);
+        push(data, &e);
+        t += n, len -= n;
+    }
+}
+
 static void src_key_click(void *data, const struct obs_key_event *event, bool key_up)
 {
     goome_event e;
@@ -397,6 +413,10 @@ static void src_key_click(void *data, const struct obs_key_event *event, bool ke
     e.mods = mods_of(event->modifiers);
     const unsigned char *t = (const unsigned char *)(event->text ? event->text : "");
     int key = special_key(event->native_vkey);
+    if (t[0] >= 0x20 && t[0] != 0x7F && (t[0] >= 0x80 || t[1]) && !(e.mods & GOOME_SUPER) && (!(e.mods & GOOME_CTRL) || (e.mods & GOOME_ALT))) {
+        send_text(data, (const char *)t);
+        return;
+    }
     if (!key && t[0] >= 0x20 && t[0] != 0x7F) key = t[0] < 0x80 ? (t[0] >= 'A' && t[0] <= 'Z' ? t[0] - 'A' + 'a' : t[0]) : t[0];
     if (!key && t[0] && t[0] < 0x20 && (e.mods & GOOME_CTRL)) key = t[0] + 'a' - 1;
     if (!key) return;
