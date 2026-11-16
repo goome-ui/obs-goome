@@ -381,7 +381,23 @@ static void split_lines(const char *text, const char **first, size_t *n1, const 
     }
 }
 
-static void marquee(ov *o, goome_canvas *c, goome_font *f, double size, double x, double y, double w, const char *s, uint32_t col, double off)
+static int starts_rtl(const char *s, size_t n)
+{
+    const unsigned char *p = (const unsigned char *)s, *end = p + n;
+    while (p < end) {
+        uint32_t c = *p;
+        int k = c < 0x80 ? 1 : c < 0xE0 ? 2 : c < 0xF0 ? 3 : 4;
+        if (k > 1) c &= 0x3F >> (k - 1);
+        for (int i = 1; i < k && p + i < end; i++) c = c << 6 | (p[i] & 0x3F);
+        p += k;
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= 0xC0 && c < 0x590 && c != 0xD7 && c != 0xF7)) return 0;
+        if ((c >= 0x590 && c < 0x900) || (c >= 0xFB1D && c < 0xFE00) || (c >= 0xFE70 && c < 0xFF00)) return 1;
+        if ((c >= 0x900 && c < 0x2000) || (c >= 0x3040 && c < 0xFB00)) return 0;
+    }
+    return 0;
+}
+
+static void marquee(goome_canvas *c, goome_font *f, double size, double x, double y, double w, const char *s, uint32_t col, double off)
 {
     double tw = measure(f, size, s);
     if (tw <= w) {
@@ -391,11 +407,11 @@ static void marquee(ov *o, goome_canvas *c, goome_font *f, double size, double x
     double gap = w * 0.4 + size, period = tw + gap;
     if (period < 1) return;
     off -= (double)(long long)(off / period) * period;
+    double at = starts_rtl(s, strlen(s)) ? x + w - tw + off : x - off, next = at > x ? at - period : at + period;
     goome_clip_push(c, x, y - size * 0.3, w, lh(f, size) + size * 0.6);
-    goome_text(c, f, size, x - off, y, s, col);
-    goome_text(c, f, size, x - off + period, y, s, col);
+    goome_text(c, f, size, at, y, s, col);
+    goome_text(c, f, size, next, y, s, col);
     goome_clip_pop(c);
-    (void)o;
 }
 
 static int np_scrolls(ov *o)
@@ -446,8 +462,8 @@ static void draw_now_playing(ov *o)
         return;
     }
     double small = big * 0.62, used = lh(f, big) + (l2[0] ? lh(f, small) : 0), ty = ly + (rest - used) / 2;
-    marquee(o, c, f, big, x, ty, w, l1, t->text, o->np_scroll * 45);
-    if (l2[0]) marquee(o, c, f, small, x, ty + lh(f, big), w, l2, t->text_dim, o->np_scroll * 45);
+    marquee(c, f, big, x, ty, w, l1, t->text, o->np_scroll * 45);
+    if (l2[0]) marquee(c, f, small, x, ty + lh(f, big), w, l2, t->text_dim, o->np_scroll * 45);
     card_end(o);
 }
 
@@ -467,7 +483,7 @@ static int goal_values(ov *o, double *cur, double *target)
     return 1;
 }
 
-static void draw_goal(ov *o, double dt)
+static void draw_goal(ov *o)
 {
     double x, y, w, h;
     if (!card_begin(o, &x, &y, &w, &h)) {
@@ -487,12 +503,7 @@ static void draw_goal(ov *o, double dt)
     double frac = target > 0 ? cur / target : 0;
     if (frac < 0) frac = 0;
     if (frac > 1) frac = 1;
-    if (!o->s.animations || dt <= 0) o->goal_shown = frac;
-    else {
-        double k = dt * 6;
-        o->goal_shown += (frac - o->goal_shown) * (k > 1 ? 1 : k);
-        if ((o->goal_shown - frac) * (o->goal_shown - frac) < 1e-8) o->goal_shown = frac;
-    }
+    o->goal_shown = goome_ui_anim(u, "goal", frac, o->s.animations ? 600 : 0, (int)t->ease);
     char a[64], b[64], nums[140], pct[16];
     fmt_num(a, sizeof(a), cur);
     fmt_num(b, sizeof(b), target);
@@ -507,7 +518,7 @@ static void draw_goal(ov *o, double dt)
     if (bh < 6) bh = 6;
     goome_radii r = goome_radius(bh / 2 < t->radius ? bh / 2 : t->radius);
     goome_draw_rrect(c, x, by, w, bh, r, t->input_bg);
-    double fw = w * o->goal_shown;
+    double fw = w * (o->goal_shown < 0 ? 0 : o->goal_shown > 1 ? 1 : o->goal_shown);
     if (fw > 0.5) goome_draw_rrect_grad(c, x, by, fw < bh ? bh : fw, bh, r, t->accent, (t->accent & 0xFF000000u) | ((t->accent & 0xFEFEFE) >> 1) | 0x202020u, 1);
     double ps = bh * 0.5 < fs ? bh * 0.5 : fs;
     if (ps > 6) text_in(c, f, ps, x, by + (bh - lh(f, ps)) / 2, w, pct, o->goal_shown > 0.55 ? t->accent_text : t->text, 1);
@@ -630,22 +641,30 @@ static void draw_ticker(ov *o)
         text_in(c, f, fs, x, y + (h - lh(f, fs)) / 2, pw, o->s.ticker_label, t->accent_text, 1);
         x += pw + t->pad, w -= pw + t->pad;
     }
-    char all[8192];
-    size_t k = 0;
-    const char *sep = f ? "   \xE2\x80\xA2   " : "   -   ";
-    for (int i = n - 1; i >= 0; i--) {
-        if (k && k + strlen(sep) < sizeof(all)) memcpy(all + k, sep, strlen(sep)), k += strlen(sep);
-        size_t m = lens[i] < sizeof(all) - 1 - k ? lens[i] : sizeof(all) - 1 - k;
-        memcpy(all + k, starts[i], m), k += m;
+    const char *sep = f ? "   \xE2\x80\xA2   " : "   -   ", *empty = "nothing in the ticker file yet";
+    if (!n) starts[0] = empty, lens[0] = strlen(empty);
+    int count = n ? n : 1, rtl = starts_rtl(starts[count - 1], lens[count - 1]);
+    double widths[64], sw = measure(f, fs, sep), tw = 0;
+    char line[600];
+    for (int i = 0; i < count; i++) {
+        snprintf(line, sizeof(line), "%.*s", (int)(lens[i] < 590 ? lens[i] : 590), starts[i]);
+        widths[i] = measure(f, fs, line);
+        tw += widths[i] + (i ? sw : 0);
     }
-    all[k] = 0;
-    if (!k) snprintf(all, sizeof(all), "%s", "nothing in the ticker file yet");
-    double tw = measure(f, fs, all), period = tw + w;
-    double off = o->scroll * (o->s.ticker_speed > 0 ? o->s.ticker_speed : 80);
+    double period = tw + w, off = o->scroll * (o->s.ticker_speed > 0 ? o->s.ticker_speed : 80);
     if (period > 1) off -= (double)(long long)(off / period) * period;
-    double ty = y + (h - lh(f, fs)) / 2;
+    double ty = y + (h - lh(f, fs)) / 2, at = 0;
     goome_clip_push(c, x, y, w, h);
-    goome_text(c, f, fs, x + w - off, ty, all, k ? t->text : t->text_dim);
+    for (int i = count - 1; i >= 0; i--) {
+        for (int part = i == count - 1; part < 2; part++) {
+            const char *txt = part ? line : sep;
+            double pw = part ? widths[i] : sw;
+            if (part) snprintf(line, sizeof(line), "%.*s", (int)(lens[i] < 590 ? lens[i] : 590), starts[i]);
+            double px = rtl ? x + off - at - pw : x + w - off + at;
+            if (px < x + w && px + pw > x) goome_text(c, f, fs, px, ty, txt, n ? t->text : t->text_dim);
+            at += pw;
+        }
+    }
     goome_clip_pop(c);
     card_end(o);
 }
@@ -712,7 +731,7 @@ int ov_tick(ov *o, double dt)
     case OV_BUILDER: draw_builder(o); break;
     case OV_TIMER: draw_timer(o); break;
     case OV_NOW_PLAYING: draw_now_playing(o); break;
-    case OV_GOAL: draw_goal(o, dt); break;
+    case OV_GOAL: draw_goal(o); break;
     case OV_CLOCK: draw_clock(o); break;
     default: draw_ticker(o); break;
     }
