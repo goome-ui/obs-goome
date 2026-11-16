@@ -33,6 +33,7 @@ jobs:
           find artifacts -path '*dSYMs*' -prune -o -type f \( -name '*.exe' -o -name '*.zip' -o -name '*.pkg' -o -name '*.deb' -o -name '*.ddeb' -o -name '*.tar.xz' \) -print -exec mv {} out/ \;
           ls -l out
           test -n "$(ls out/*windows-x64* 2>/dev/null)" || { echo "nothing for windows"; exit 1; }
+          test -n "$(ls out/*windows-x64-installer.exe 2>/dev/null)" || { echo "no windows installer"; exit 1; }
           test -n "$(ls out/*macos-universal*.pkg 2>/dev/null)" || { echo "no mac pkg"; exit 1; }
           test -n "$(ls out/*.deb 2>/dev/null)" || { echo "no deb"; exit 1; }
           (cd out && sha256sum * > SHA256SUMS.txt)

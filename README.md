@@ -46,15 +46,15 @@
 <br>
 
 <p align="center">
-Grab the file for your OS from the <a href="https://github.com/goome-ui/obs-goome/releases">releases page</a>. Before the first release, the newest green run of the <b>Push</b> workflow on the <a href="https://github.com/goome-ui/obs-goome/actions/workflows/push.yaml">Actions tab</a> has the same files at the bottom (you need to be logged in to GitHub to download them).<br>
+Grab the file for your OS from the <a href="https://github.com/goome-ui/obs-goome/releases/latest">latest release</a>.<br>
 It needs OBS Studio 31 or newer. Close OBS before you install it.
 </p>
 
 <h3 align="center">🪟 Windows</h3>
 
 <p align="center">
-Download <code>obs-goome-…-windows-x64.zip</code> and unzip it into <code>C:\ProgramData\obs-studio\plugins</code>, so you end up with <code>C:\ProgramData\obs-studio\plugins\obs-goome\bin\64bit\obs-goome.dll</code>.<br>
-Thats the folder OBS looks in for plugins, make it if its not there yet.
+Download <code>obs-goome-…-windows-x64-installer.exe</code> and run it. It puts the plugin in <code>C:\ProgramData\obs-studio\plugins\obs-goome</code>, thats the folder OBS looks in for plugins, and you can uninstall it from Settings > Apps like anything else. Its not signed, so if SmartScreen pops up click More info, then Run anyway.<br> <br>
+Rather not run an installer? Download <code>obs-goome-…-windows-x64.zip</code> and unzip it into <code>C:\ProgramData\obs-studio\plugins</code>, so you end up with <code>C:\ProgramData\obs-studio\plugins\obs-goome\bin\64bit\obs-goome.dll</code>. Make the folder if its not there yet.
 </p>
 
 <h3 align="center">🍎 macOS</h3>

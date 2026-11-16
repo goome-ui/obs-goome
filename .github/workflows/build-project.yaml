@@ -290,6 +290,38 @@ jobs:
           config: ${{ needs.check-event.outputs.config }}
           package: ${{ fromJSON(needs.check-event.outputs.package) }}
 
+      - name: Build Installer 📦
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if ( ! (Test-Path $iscc) ) {
+            choco install innosetup -y --no-progress
+          }
+          $name = '${{ steps.setup.outputs.pluginName }}'
+          $version = '${{ steps.setup.outputs.pluginVersion }}'
+          $source = "${{ github.workspace }}\release\${{ needs.check-event.outputs.config }}\$name"
+          if ( ! (Test-Path "$source\bin\64bit\$name.dll") ) { throw "no $name.dll in $source" }
+          & $iscc /Qp "/DVersion=$version" "/DSource=$source" "/DOutDir=${{ github.workspace }}\release" cmake\windows\resources\installer.iss
+          if ( $LASTEXITCODE -ne 0 ) { throw "ISCC failed" }
+
+      - name: Test Installer 🧪
+        run: |
+          $name = '${{ steps.setup.outputs.pluginName }}'
+          $exe = "${{ github.workspace }}\release\$name-${{ steps.setup.outputs.pluginVersion }}-windows-x64-installer.exe"
+          $dir = "${env:RUNNER_TEMP}\obs-plugins\$name"
+          $p = Start-Process -FilePath $exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$dir", "/LOG=${env:RUNNER_TEMP}\install.log" -Wait -PassThru
+          Get-Content "${env:RUNNER_TEMP}\install.log" -Tail 20
+          if ( $p.ExitCode -ne 0 ) { throw "install exited with $($p.ExitCode)" }
+          foreach ( $f in "bin\64bit\$name.dll", 'data\locale\en-US.ini' ) {
+            if ( ! (Test-Path "$dir\$f") ) { throw "$f didnt get installed" }
+          }
+          if ( Test-Path "$dir\bin\64bit\$name.pdb" ) { throw "the pdb got installed" }
+          Get-ChildItem -Recurse $dir | Select-Object FullName
+          $p = Start-Process -FilePath "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
+          if ( $p.ExitCode -ne 0 ) { throw "uninstall exited with $($p.ExitCode)" }
+          $tries = 0
+          while ( (Test-Path "$dir\bin\64bit\$name.dll") -and $tries -lt 30 ) { Start-Sleep 1; $tries++ }
+          if ( Test-Path "$dir\bin\64bit\$name.dll" ) { throw "uninstall left the dll behind" }
+
       - name: Upload Artifacts 📡
         uses: actions/upload-artifact@v4
         with:
