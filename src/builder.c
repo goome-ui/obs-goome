@@ -157,6 +157,22 @@ static double color_of(const js *v, double def)
     return def;
 }
 
+static double theme_val(int i, const js *v)
+{
+    if (tfields[i].color) return color_of(v, -1);
+    if (!strcmp(tfields[i].name, "ease") && v->type == JS_STR) {
+        static const char *const names[] = {"smooth", "linear", "out", "in_out", "back", "custom", "in", "spring", "bounce"};
+        const char *s = v->str;
+        if (!strncmp(s, "GOOME_EASE_", 11)) s += 11;
+        for (int k = 0; k < (int)(sizeof(names) / sizeof(names[0])); k++) {
+            const char *a = s, *b = names[k];
+            while (*a && *b && (*a | 32) == *b) a++, b++;
+            if (!*a && !*b) return k;
+        }
+    }
+    return js_num(v, -1e300);
+}
+
 static const char *pstr(const bn *n, const char *k, const char *def)
 {
     return js_str(js_get(n->p, k), def);
@@ -755,7 +771,7 @@ static void load_theme(bdoc *d, const js *t)
     for (int i = 0; i < NFIELDS && d->nbase < (int)(sizeof(d->base) / sizeof(d->base[0])); i++) {
         const js *v = js_get(t, tfields[i].name);
         if (!v) continue;
-        double x = tfields[i].color ? color_of(v, -1) : js_num(v, -1e300);
+        double x = theme_val(i, v);
         if ((tfields[i].color && x < 0) || x == -1e300) continue;
         d->base[d->nbase].field = i, d->base[d->nbase++].v = x;
     }
@@ -776,7 +792,7 @@ static void apply_theme_obj(bdoc *d, goome_theme *t, const js *o, int light)
     for (int i = 0; i < NFIELDS; i++) {
         const js *v = js_get(o, tfields[i].name);
         if (!v) continue;
-        double x = tfields[i].color ? color_of(v, -1) : js_num(v, -1e300);
+        double x = theme_val(i, v);
         if ((tfields[i].color && x < 0) || x == -1e300) continue;
         ov_theme_set(t, i, x);
     }
@@ -1037,7 +1053,9 @@ static int push_style(bdoc *d, const js *st)
     }
     for (int i = 0; nums && nums->type == JS_OBJ && i < nums->n; i++) {
         int col, f = ov_theme_field(nums->kids[i].key, &col);
-        if (f >= 0 && !col && nums->kids[i].type == JS_NUM) goome_ui_push_num(u, f, nums->kids[i].num), k++;
+        if (f < 0 || col) continue;
+        double x = theme_val(f, &nums->kids[i]);
+        if (x != -1e300) goome_ui_push_num(u, f, x), k++;
     }
     if (radii && radii->type == JS_ARR && radii->n == 4) {
         goome_radii r = {js_num(&radii->kids[0], 0), js_num(&radii->kids[1], 0), js_num(&radii->kids[2], 0), js_num(&radii->kids[3], 0)};
