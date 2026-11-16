@@ -1,0 +1,57 @@
+name: tests
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  harness:
+    name: harness on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc
+      - name: pixel hashes (windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: CC=gcc tests/run.sh check
+      - name: pixel hashes
+        if: runner.os != 'Windows'
+        run: tests/run.sh check
+
+  libobs:
+    name: real libobs render
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: obs from the ppa
+        run: |
+          sudo add-apt-repository --yes ppa:obsproject/obs-studio
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends obs-studio libsimde-dev cmake ninja-build build-essential xvfb libgl1-mesa-dri libegl1
+      - name: build the plugin
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build
+          cmake --install build --prefix "$PWD/inst"
+      - name: draw it with libobs and click it
+        run: |
+          gcc -std=gnu17 -Wall -Wextra -Wno-deprecated-declarations tests/obs_render.c -I/usr/include/obs -lobs -l:libX11.so.6 -o obs_render
+          so=$(find inst -name obs-goome.so | head -1)
+          data=$(find inst -type d -path '*obs-plugins/obs-goome' | head -1)
+          xvfb-run -a ./obs_render "$so" "$data" /usr/share/obs/libobs/ before.ppm after.ppm
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: libobs-render
+          path: '*.ppm'

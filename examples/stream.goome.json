@@ -1,0 +1,406 @@
+{
+  "format": "goome-project",
+  "version": 1,
+  "name": "stream overlay",
+  "mode": "overlay",
+  "title": "stream overlay",
+  "app": {
+    "w": 960,
+    "h": 640,
+    "titlebar": false,
+    "menubar": false,
+    "statusbar": false,
+    "nopad": false,
+    "status": "ready"
+  },
+  "root": [
+    {
+      "id": "nlsm8rjrjv",
+      "type": "window",
+      "p": {
+        "label": "Stream controls",
+        "var": "win",
+        "x": 20,
+        "y": 20,
+        "w": 320,
+        "h": 0,
+        "move": true,
+        "resize": false,
+        "collapse": false,
+        "notitle": false,
+        "close": false
+      },
+      "kids": [
+        [
+          {
+            "id": "nlsm8rkqq3",
+            "type": "heading",
+            "p": {
+              "label": "Hello chat",
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8rlnbn",
+            "type": "toggle",
+            "p": {
+              "label": "Camera",
+              "var": "wifi",
+              "on": true,
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8rm5c7",
+            "type": "checkbox",
+            "p": {
+              "label": "Show chat",
+              "var": "show_grid",
+              "on": false,
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8rn06q",
+            "type": "slider",
+            "p": {
+              "label": "Volume",
+              "var": "volume",
+              "min": 0,
+              "max": 1,
+              "value": 0.65,
+              "fmt": "%.2f",
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8ro12m",
+            "type": "plot_lines",
+            "p": {
+              "label": "Viewers",
+              "var": "cpu",
+              "values": "12 18 16 25 31 28 40 44 39 52",
+              "min": 0,
+              "max": 60,
+              "h": 60,
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8rp18u",
+            "type": "button",
+            "p": {
+              "label": "Hype!",
+              "action": "print",
+              "toast": "Saved",
+              "ms": 2500,
+              "tooltip": "",
+              "width": 0
+            },
+            "on": {
+              "click": [
+                {
+                  "do": "add",
+                  "var": "hype",
+                  "value": "10",
+                  "target": "",
+                  "tab": 0,
+                  "text": "",
+                  "ms": 2500,
+                  "fn": ""
+                }
+              ]
+            },
+            "style": {
+              "c": {
+                "accent": 4294081446
+              },
+              "n": {
+                "radius": 99
+              }
+            }
+          },
+          {
+            "id": "nlsm8rq5sy",
+            "type": "progress",
+            "p": {
+              "value": 0.6,
+              "label": "hype {hype}%",
+              "tooltip": "",
+              "width": 0,
+              "bind": "hype"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "nlsm8rrpk3",
+      "type": "window",
+      "p": {
+        "label": "Poll",
+        "var": "win2",
+        "x": 360,
+        "y": 20,
+        "w": 330,
+        "h": 0,
+        "move": true,
+        "resize": false,
+        "collapse": false,
+        "notitle": false,
+        "close": false
+      },
+      "kids": [
+        [
+          {
+            "id": "nlsm8rs1ws",
+            "type": "label",
+            "p": {
+              "label": "whats next?",
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8rtkwm",
+            "type": "radio",
+            "p": {
+              "var": "size",
+              "items": "Ranked\nSpeedrun\nChill",
+              "sel": 1,
+              "inline": true,
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8su7kh",
+            "type": "progress",
+            "p": {
+              "value": 0.6,
+              "label": "Speedrun 60%",
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8sv14o",
+            "type": "input",
+            "p": {
+              "label": "Name",
+              "var": "name",
+              "text": "goome",
+              "cap": 64,
+              "hint": "your name",
+              "password": false,
+              "readonly": false,
+              "number": false,
+              "enter": false,
+              "noselect": false,
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8swunf",
+            "type": "separator",
+            "p": {}
+          },
+          {
+            "id": "nlsm8sxmcf",
+            "type": "image",
+            "p": {
+              "w": 140,
+              "h": 70,
+              "radius": 10,
+              "tooltip": "",
+              "width": 0
+            }
+          },
+          {
+            "id": "nlsm8syttd",
+            "type": "label",
+            "p": {
+              "label": "live",
+              "tooltip": "",
+              "width": 0
+            },
+            "abs": {
+              "x": 200,
+              "y": 200
+            },
+            "style": {
+              "c": {
+                "text": 4294081446
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ],
+  "theme": {
+    "id": "midnight",
+    "name": "Midnight",
+    "base": "dark",
+    "bg": 4279112480,
+    "panel": 4027915051,
+    "border": 587202559,
+    "text": 4293323506,
+    "text_dim": 4287272104,
+    "accent": 4285442303,
+    "accent_text": 4278916132,
+    "hover": 4280561737,
+    "active": 4281219928,
+    "input_bg": 4280034360,
+    "shadow": 2566914048,
+    "focus": 0,
+    "select": 0,
+    "caret": 0,
+    "link": 0,
+    "badge": 0,
+    "toast": 0,
+    "tooltip": 0,
+    "danger": 0,
+    "knob": 0,
+    "dim": 0,
+    "radius": 8,
+    "pad": 10,
+    "gap": 8,
+    "border_width": 1,
+    "font_size": 15,
+    "shadow_blur": 22,
+    "anim_ms": 120,
+    "check_size": 18,
+    "check_radius": 5,
+    "toggle_w": 38,
+    "toggle_h": 22,
+    "slider_h": 22,
+    "slider_track": 6,
+    "knob_size": 8,
+    "scroll_w": 4,
+    "scroll_min": 28,
+    "item_h": 0,
+    "menu_item_h": 0,
+    "tab_h": 0,
+    "win_title_h": 0,
+    "app_title_h": 0,
+    "menubar_h": 0,
+    "statusbar_h": 0,
+    "focus_w": 2,
+    "focus_gap": 3,
+    "sep_w": 1,
+    "grip": 18,
+    "indent": 16,
+    "plot_w": 2,
+    "spinner": 0,
+    "caret_w": 0,
+    "win_min_w": 140,
+    "win_min_h": 50,
+    "pop_gap": 6,
+    "menu_gap": 3,
+    "tip_pad_x": 10,
+    "tip_pad_y": 7,
+    "tip_x": 14,
+    "tip_y": 20,
+    "tip_radius": 8,
+    "shadow_x": 0,
+    "shadow_y": 5,
+    "align": 0,
+    "heading_size": 0,
+    "small_size": 0,
+    "ease": 0,
+    "hover_ms": -1,
+    "press_ms": -1,
+    "popup_ms": -1,
+    "collapse_ms": -1,
+    "toast_fade_ms": -1,
+    "skin_button": null,
+    "skin_panel": null,
+    "skin_input": null,
+    "skin_scrollbar": null,
+    "skin_slider_track": null,
+    "skin_toggle": null,
+    "skin_tab": null,
+    "skin_titlebar": null,
+    "skin_tooltip": null,
+    "skin_menu": null,
+    "skin_checkbox": null,
+    "skin_radio": null,
+    "skin_slider_fill": null,
+    "skin_popup": null,
+    "icons": {},
+    "icon_tint": 0,
+    "font_heading": "",
+    "font_mono": "",
+    "font_small": ""
+  },
+  "themes": [],
+  "elements": [],
+  "grid": {
+    "size": 8,
+    "snap": true,
+    "show": false
+  },
+  "vars": [
+    {
+      "id": "vlsm8ri5oz",
+      "name": "hype",
+      "type": "int",
+      "def": 30,
+      "min": 0,
+      "max": 100
+    }
+  ],
+  "hotkeys": [],
+  "config": {
+    "tip_delay_ms": 500,
+    "dbl_click_ms": 450,
+    "dbl_click_px": 5,
+    "drag_px": 4,
+    "repeat_delay_ms": 380,
+    "repeat_ms": 55,
+    "blink_ms": 530,
+    "menu_delay_ms": 120,
+    "toast_ms": 3000,
+    "scroll_lines": 3,
+    "raise_on_click": 1,
+    "esc_closes": 1,
+    "tab_nav": 1,
+    "focus_on_mouse": 0,
+    "cursor": {
+      "button": "ARROW",
+      "input": "IBEAM",
+      "link": "HAND",
+      "drag_value": "RESIZE_EW",
+      "split_x": "RESIZE_EW",
+      "split_y": "RESIZE_NS",
+      "grip": "RESIZE_NWSE",
+      "column": "RESIZE_EW",
+      "drag_drop": "MOVE",
+      "custom_x": "RESIZE_EW",
+      "custom_y": "RESIZE_NS",
+      "custom_xy": "MOVE"
+    },
+    "keys": {
+      "copy": "ctrl+c super+c",
+      "cut": "ctrl+x super+x",
+      "paste": "ctrl+v super+v",
+      "undo": "ctrl+z super+z",
+      "redo": "ctrl+y ctrl+shift+z super+y super+shift+z",
+      "select_all": "ctrl+a super+a",
+      "word_left": "ctrl+left super+left",
+      "word_right": "ctrl+right super+right",
+      "del_word_left": "ctrl+backspace super+backspace",
+      "del_word_right": "ctrl+delete super+delete",
+      "doc_start": "ctrl+home super+home",
+      "doc_end": "ctrl+end super+end"
+    },
+    "mask": "*"
+  }
+}

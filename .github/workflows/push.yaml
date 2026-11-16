@@ -1,0 +1,14 @@
+name: Push
+run-name: ${{ github.ref_name }} push run 🚀
+on:
+  push:
+    branches: ['**']
+permissions:
+  contents: write
+jobs:
+  build-project:
+    name: Build Project 🧱
+    uses: ./.github/workflows/build-project.yaml
+    secrets: inherit
+    permissions:
+      contents: read
