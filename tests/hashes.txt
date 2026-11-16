@@ -17,4 +17,15 @@ builder_hype 6887696e
 builder_typed 367f6414
 builder_light a381a400
 builder_missing 43c78595
+now_playing_emoji 4b48eada
+now_playing_rtl e5eed1b2
+now_playing_rtl_scroll 971b2b70
+ticker_emoji 720df267
+ticker_emoji_chat 89cdd895
+ticker_rtl 1ad6607e
+ime_before ec3059a3
+ime_text 6913f325
+ime_want 6913f325
+ime_long 45958847
+ime_long_want 45958847
 resized c9ccf07e

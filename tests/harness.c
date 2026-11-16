@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "builder.h"
 #include "shim.h"
 
 typedef struct {
@@ -102,6 +103,23 @@ static void type(void *src, const char *s)
         info->key_click(src, &e, true);
     }
     frames(src, 1, 1.0f / 60);
+}
+
+static void key_text(void *src, const char *text)
+{
+    struct obs_key_event e;
+    memset(&e, 0, sizeof(e));
+    e.text = (char *)text;
+    info->key_click(src, &e, false);
+    info->key_click(src, &e, true);
+    frames(src, 1, 1.0f / 60);
+}
+
+static void test_font(obs_data_t *d)
+{
+    char path[1200];
+    snprintf(path, sizeof(path), "%s/tests/colorfont.ttf", root);
+    shim_set_string(d, "font", path);
 }
 
 static void save_shot(const char *name, const uint8_t *px, int w, int h)
@@ -277,6 +295,124 @@ static void test_ticker(void)
     shim_data_free(d);
 }
 
+static void test_emoji_rtl(void)
+{
+    write_file("harness-np.txt", "ab \xF0\x9F\x98\x80 \xF0\x9F\x98\x80\xF0\x9F\x8F\xBB c \xE2\x9D\xA4\xEF\xB8\x8F\n\xD7\x90\xD7\x91\xD7\x92 (12)\n");
+    obs_data_t *d = base(OV_NOW_PLAYING, 560, 140);
+    test_font(d);
+    shim_set_string(d, "np_file", "harness-np.txt");
+    shim_set_string(d, "np_label", "abc \xE2\x9D\xA4");
+    void *s = info->create(d, NULL);
+    frames(s, 3, 1.0f / 30);
+    snap(s, "now_playing_emoji");
+    write_file("harness-np.txt", "\xD8\xA8\xD9\x84\xD8\xA7\xD9\x85 \xD8\xA8\xD8\xA8\xD8\xA8 \xD9\x84\xD9\x85 \xD8\xA8\xD9\x84\xD8\xA7\xD9\x85 \xD8\xA8\xD8\xA8\xD8\xA8 \xD9\x84\xD9\x85 \xD8\xA8\xD9\x84\xD8\xA7\xD9\x85 \xD8\xA8\xD8\xA8\xD8\xA8 \xF0\x9F\x98\x80\n\xD7\x90\xD7\x91\xD7\x92 \xD7\x90\xD7\x91\xD7\x92 \xD7\x90\xD7\x91\xD7\x92 \xD7\x90\xD7\x91\xD7\x92 \xD7\x90\xD7\x91\xD7\x92 \xD7\x90\xD7\x91\xD7\x92 \xD7\x90\xD7\x91\xD7\x92\n");
+    frames(s, 31, 1.0f / 30);
+    uint32_t a = snap(s, "now_playing_rtl");
+    frames(s, 10, 1.0f / 30);
+    expect(a != snap(s, "now_playing_rtl_scroll"), "a long rtl song name scrolls");
+    info->destroy(s);
+    shim_data_free(d);
+
+    write_file("harness-ticker.txt", "ab: \xF0\x9F\x98\x80 abc\n\xD7\x90\xD7\x91\xD7\x92 (12) \xF0\x9F\x98\x80\xE2\x80\x8D\xF0\x9F\x98\x80\n\xD8\xA8\xD9\x84\xD8\xA7\xD9\x85 \xD8\xA8\xD8\xA8\xD8\xA8 \xD9\x84\xD9\x85\nc: \xE2\x9D\xA4\xEF\xB8\x8F \xE2\x9D\xA4\n");
+    d = base(OV_TICKER, 720, 74);
+    test_font(d);
+    shim_set_string(d, "ticker_file", "harness-ticker.txt");
+    shim_set_string(d, "ticker_label", "\xF0\x9F\x98\x80");
+    s = info->create(d, NULL);
+    frames(s, 90, 1.0f / 30);
+    snap(s, "ticker_emoji");
+    info->destroy(s);
+    shim_set_int(d, "ticker_style", 1);
+    shim_set_int(d, "height", 200);
+    s = info->create(d, NULL);
+    frames(s, 3, 1.0f / 30);
+    snap(s, "ticker_emoji_chat");
+    info->destroy(s);
+    write_file("harness-ticker.txt", "\xD7\x90\xD7\x91\xD7\x92 \xD7\x91\xD7\x92\n\xD8\xA8\xD9\x84\xD8\xA7\xD9\x85 \xD8\xA8\xD8\xA8\xD8\xA8\n");
+    shim_set_int(d, "ticker_style", 0);
+    shim_set_int(d, "height", 74);
+    shim_set_string(d, "ticker_label", "");
+    s = info->create(d, NULL);
+    frames(s, 30, 1.0f / 30);
+    snap(s, "ticker_rtl");
+    info->destroy(s);
+    shim_data_free(d);
+}
+
+static const char ime_doc[] = "{\"format\": \"goome-project\", \"version\": 1, \"mode\": \"overlay\", \"theme\": {\"base\": \"dark\", \"ease\": \"spring\"},"
+                              " \"root\": [{\"id\": \"w\", \"type\": \"window\", \"p\": {\"label\": \"ab\", \"x\": 10, \"y\": 10, \"w\": 300, \"h\": 120, \"notitle\": true},"
+                              " \"kids\": [[{\"id\": \"i\", \"type\": \"input\", \"p\": {\"label\": \"ab\", \"text\": \"%s\", \"cap\": 200}}]]}]}";
+
+static uint32_t ime_render(const char *start, const char *typed, const char *name)
+{
+    char doc[1400];
+    snprintf(doc, sizeof(doc), ime_doc, start);
+    write_file("harness-ime.goome.json", doc);
+    obs_data_t *d = base(OV_BUILDER, 340, 150);
+    test_font(d);
+    shim_set_string(d, "builder_file", "harness-ime.goome.json");
+    shim_set_int(d, "theme", -1);
+    void *s = info->create(d, NULL);
+    frames(s, 3, 1.0f / 60);
+    if (typed) {
+        click(s, 150, 52);
+        struct obs_key_event e;
+        memset(&e, 0, sizeof(e));
+#if defined(_WIN32)
+        uint32_t end = 0x23, home = 0x24;
+#elif defined(__APPLE__)
+        uint32_t end = 119, home = 115;
+#else
+        uint32_t end = 0xFF57, home = 0xFF50;
+#endif
+        e.native_vkey = end;
+        info->key_click(s, &e, false);
+        key_text(s, typed);
+        e.native_vkey = home;
+        info->key_click(s, &e, false);
+    }
+    click(s, 160, 115);
+    leave(s);
+    uint32_t h = snap(s, name);
+    info->destroy(s);
+    shim_data_free(d);
+    return h;
+}
+
+static void test_ime(void)
+{
+    const char *heb = "\xD7\x90\xD7\x91\xD7\x92", *emo = "\xF0\x9F\x98\x80\xF0\x9F\x8F\xBB";
+    char want[200], typed[200];
+    snprintf(want, sizeof(want), "ab%s%s", emo, heb);
+    snprintf(typed, sizeof(typed), "%s%s", emo, heb);
+    uint32_t before = ime_render("ab", NULL, "ime_before");
+    uint32_t after = ime_render("ab", typed, "ime_text");
+    expect(after != before && after == ime_render(want, NULL, "ime_want"), "text from a key event goes in as one GOOME_TEXT");
+    char lng[200] = "ab", more[200] = "";
+    for (int i = 0; i < 8; i++) strcat(more, heb), strcat(more, emo);
+    strcat(lng, more);
+    expect(strlen(more) > 63 && ime_render("ab", more, "ime_long") == ime_render(lng, NULL, "ime_long_want"), "text longer than one event gets split on whole letters");
+    remove("harness-ime.goome.json");
+}
+
+static void test_ease(void)
+{
+    static const char *const names[] = {"\"spring\"", "\"GOOME_EASE_BOUNCE\"", "\"In\"", "6", "\"back\"", "\"wobble\""};
+    static const int want[] = {GOOME_EASE_SPRING, GOOME_EASE_BOUNCE, GOOME_EASE_IN, GOOME_EASE_IN, GOOME_EASE_BACK, GOOME_EASE_SMOOTH};
+    for (int i = 0; i < 6; i++) {
+        char doc[300], err[160];
+        snprintf(doc, sizeof(doc), "{\"format\": \"goome-project\", \"version\": 1, \"theme\": {\"ease\": %s}, \"root\": []}", names[i]);
+        bdoc *b = bdoc_parse(doc, strlen(doc), "", err, sizeof(err));
+        goome_theme t;
+        memset(&t, 0, sizeof(t));
+        if (b) bdoc_theme(b, &t);
+        char what[120];
+        snprintf(what, sizeof(what), "theme ease %s loads as %d", names[i], want[i]);
+        expect(b && (int)t.ease == want[i], what);
+        bdoc_free(b);
+    }
+}
+
 static void test_builder(void)
 {
     char path[1200];
@@ -377,11 +513,15 @@ int main(int argc, char **argv)
     test_clock();
     test_ticker();
     test_builder();
+    test_emoji_rtl();
+    test_ime();
+    test_ease();
     test_props();
     obs_module_unload();
     remove("harness-np.txt");
     remove("harness-goal.txt");
     remove("harness-ticker.txt");
+    remove("harness-ime.goome.json");
     if (!strcmp(mode, "check")) {
         char file[1200];
         snprintf(file, sizeof(file), "%s/tests/hashes.txt", root);
