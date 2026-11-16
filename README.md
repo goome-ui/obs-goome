@@ -60,14 +60,14 @@ Thats the folder OBS looks in for plugins, make it if its not there yet.
 <h3 align="center">🍎 macOS</h3>
 
 <p align="center">
-Download <code>obs-goome-…-macos-universal.pkg</code> and open it. It isnt signed yet, so if macOS blocks it right click it, pick Open, then Open again.<br>
-Or take the <code>obs-goome.plugin</code> out of the <code>.tar.xz</code> and put it in <code>~/Library/Application Support/obs-studio/plugins</code>. It runs on Apple Silicon and Intel.
+Download <code>obs-goome-…-macos-universal.pkg</code> and open it, it puts the plugin in the right place. It isnt signed yet, so if macOS blocks it right click it, pick Open, then Open again.<br>
+It runs on Apple Silicon and Intel.
 </p>
 
 <h3 align="center">🐧 Linux</h3>
 
 <p align="center">
-On Ubuntu / Debian with OBS from the PPA or your distro:
+On Ubuntu / Debian download <code>obs-goome-…-x86_64-linux-gnu.deb</code> and install it:
 </p>
 
 ```sh
@@ -75,7 +75,18 @@ sudo apt install ./obs-goome-*-x86_64-linux-gnu.deb
 ```
 
 <p align="center">
-Anywhere else, unpack the <code>.tar.xz</code> into <code>~/.config/obs-studio/plugins/obs-goome/</code> so the <code>.so</code> ends up in <code>bin/64bit/</code> and the locale in <code>data/</code>.<br>
+Its built against the OBS from the <a href="https://launchpad.net/~obsproject/+archive/ubuntu/obs-studio">OBS PPA</a>, so it wants that OBS or a newer one.<br>
+On other distros you can pull the files out of the .deb without installing it:
+</p>
+
+```sh
+mkdir deb && dpkg-deb -x obs-goome-*-x86_64-linux-gnu.deb deb    # or: ar x the.deb && tar xf data.tar.*
+mkdir -p ~/.config/obs-studio/plugins/obs-goome/bin/64bit ~/.config/obs-studio/plugins/obs-goome/data
+cp deb/usr/lib/*/obs-plugins/obs-goome.so ~/.config/obs-studio/plugins/obs-goome/bin/64bit/
+cp -r deb/usr/share/obs/obs-plugins/obs-goome/* ~/.config/obs-studio/plugins/obs-goome/data/
+```
+
+<p align="center">
 The Flatpak version of OBS cant load plugins from outside the flatpak, so this wont show up there.
 </p>
 
