@@ -123,7 +123,7 @@ After that, open OBS, add a source and pick <b>goome overlay</b>.
   <b>Song file</b> - a text file your music app or a tool like Tuna or Snip writes. The first line is the song, the second line the artist<br>
   <b>Label</b> - the green line, "Now playing" by default<br>
   <b>Text when the file is empty</b> - "nothing playing" by default<br>
-  It checks the file every second. Long names scroll sideways.
+  It checks the file every second. Long names scroll sideways, and Arabic or Hebrew names scroll the other way so you read them from the start. Emoji work too.
 </p>
 
 <h3 align="center">🎯 Goal Bar</h3>
@@ -133,7 +133,7 @@ After that, open OBS, add a source and pick <b>goome overlay</b>.
   <b>Label</b> - "Sub goal", "Follower goal", whatever<br>
   <b>Numbers come from</b> - these settings (Current and Goal), or a text file<br>
   <b>Goal file</b> - just <code>120</code>, or <code>120/500</code> to set the goal from the file too<br>
-  The bar slides to the new value when it changes.
+  The bar slides to the new value when it changes, with the <b>ease</b> from the theme (so spring and bounce work here too).
 </p>
 
 <h3 align="center">🕒 Clock</h3>
@@ -151,7 +151,8 @@ After that, open OBS, add a source and pick <b>goome overlay</b>.
   <img src="docs/chat.png" alt="chat lines" width="440"><br>
   <b>Text file</b> - newest line at the bottom, like a chat log a bot writes. It only reads the end of the file, so a huge log is fine<br>
   <b>Style</b> - one scrolling line, or chat lines stacked from the bottom. <code>name: message</code> lines get the name in the accent color<br>
-  <b>Scroll speed</b> / <b>Lines to show</b> - for the two styles
+  <b>Scroll speed</b> / <b>Lines to show</b> - for the two styles<br>
+  Every line keeps its own direction, so an English line next to an Arabic one still reads right. If the oldest line is right to left the whole ticker scrolls the other way
 </p>
 </details>
 
@@ -164,6 +165,7 @@ After that, open OBS, add a source and pick <b>goome overlay</b>.
 1. Open the <a href="https://goome-ui.github.io/docs/builder/">builder</a>, drag your ui together and hit <b>Save project (.goome.json)</b> in the menu<br>
 2. In the source settings set <b>Show</b> to <b>A builder file</b> and pick that file<br>
 3. Leave <b>Theme</b> on <b>From the builder file</b> to keep your builder theme, or pick a preset to swap it<br> <br>
+The motion keys (anim_ms, ease, hover_ms and the rest) come through as well. The builder saves ease as a number, if you edit the json by hand you can also write the name like <code>"spring"</code> or <code>"GOOME_EASE_BOUNCE"</code>.<br>
 Save the file again from the builder and the source reloads it by itself, no need to touch OBS. Window positions in the builder are pixels from the top left of the source.<br>
 <code>examples/stream.goome.json</code> is the one in the big picture up top.
 </p>
@@ -190,7 +192,8 @@ The builder doesnt save pixels for image widgets, so they draw as a checker box.
 <p align="center">
 Right click the source (in the scene or the sources list) and pick <b>Interact</b>. OBS opens a window with the source in it, and clicks, mouse moves, the scroll wheel and your keyboard go straight into goome.<br>
 So the timer buttons, builder buttons, toggles, sliders and text inputs all work, and what you change shows up on stream right away.<br> <br>
-OBS doesnt let a source change the mouse cursor, so the cursor stays an arrow over inputs.
+OBS doesnt let a source change the mouse cursor, so the cursor stays an arrow over inputs.<br> <br>
+Accents from dead keys, compose and other keyboard layouts go in fine, the plugin hands them to goome as finished text. A real IME (Japanese, Chinese, Korean) wont work in there though, the OBS Interact window only sends key presses and never the input method text, so theres no preedit either. Type it somewhere else and paste it.
 </p>
 </details>
 
@@ -202,6 +205,7 @@ OBS doesnt let a source change the mouse cursor, so the cursor stays an arrow ov
 <p align="center">
 <b>Theme</b> has all the goome presets: goome dark, goome light, Midnight, Paper, Mint, High contrast and Rose. The clock above is on Paper, the ticker on Mint and the chat on Rose.<br>
 <b>Use my own accent color</b> swaps just the accent, <b>UI scale</b> makes everything bigger or smaller, and <b>Font</b> takes a system font name, a path to a .ttf, or <code>builtin</code> for the font built into goome.<br>
+System fonts and .ttf paths get your systems emoji font (and an Arabic / Hebrew one if the font doesnt have those) added behind them, so emoji just show up. <code>builtin</code> has no emoji.<br>
 Turn off <b>Draw the card behind it</b> and only the text and widgets show, straight on top of your scene.
 </p>
 </details>
@@ -224,6 +228,7 @@ tests/run.sh shots     # write a .ppm of every render with your system font, tha
 
 <p align="center">
 The hashes use goome's built in font and a fixed clock so they come out the same on every OS. CI runs them on Linux, Windows and macOS.<br>
+The emoji, RTL and typing tests use <code>tests/colorfont.ttf</code> instead, its the tiny made up color font from c-goome's <code>tests/mkfonts.py</code> (same license as goome) so the emoji dont depend on whatever emoji font your OS has.<br>
 CI also builds the real plugin on all 3 and, on Linux, loads it into a real libobs with OpenGL under Xvfb (<code>tests/obs_render.c</code>), draws the timer, clicks Start through <code>obs_source_send_mouse_click</code> and checks the frame changed.
 </p>
 </details>
