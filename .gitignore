@@ -1,0 +1,7 @@
+/build*/
+/release/
+/.ccache/
+/cmake/.CMakeBuildNumber
+*.lock.json
+*.ppm
+.DS_Store
