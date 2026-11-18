@@ -9,18 +9,18 @@
 </p>
 
 <p align="center">
-  <img src="https://goome-ui.github.io/docs/assets/badges/obs-31.svg" alt="OBS Studio 31+">
-  <img src="https://goome-ui.github.io/docs/assets/badges/c99.svg" alt="C99">
-  <img src="https://goome-ui.github.io/docs/assets/badges/dependencies-none.svg" alt="no dependencies">
+  <img src="https://goome.wtf/badges/obs-31.svg" alt="OBS Studio 31+">
+  <img src="https://goome.wtf/badges/c99.svg" alt="C99">
+  <img src="https://goome.wtf/badges/dependencies-none.svg" alt="no dependencies">
   <img src="https://img.shields.io/badge/Linux-x86__64-1b1d22?style=flat-square&logo=linux&logoColor=white" alt="Linux">
   <img src="https://img.shields.io/badge/Windows-x64-1b1d22?style=flat-square&logo=windows11&logoColor=white" alt="Windows">
   <img src="https://img.shields.io/badge/macOS-universal-1b1d22?style=flat-square&logo=apple&logoColor=white" alt="macOS">
-  <img src="https://goome-ui.github.io/docs/assets/badges/license-gpl-3.svg" alt="GPL-3.0">
+  <img src="https://goome.wtf/badges/license-gpl-3.svg" alt="GPL-3.0">
 </p>
 
 <p align="center">
-  <a href="https://goome-ui.github.io/docs/">Docs</a> &nbsp;·&nbsp;
-  <a href="https://goome-ui.github.io/docs/builder/">Builder</a> &nbsp;·&nbsp;
+  <a href="https://goome.wtf/docs/">Docs</a> &nbsp;·&nbsp;
+  <a href="https://goome.wtf/builder/">Builder</a> &nbsp;·&nbsp;
   <a href="https://github.com/goome-ui/examples">Examples</a> &nbsp;·&nbsp;
   <a href="https://github.com/goome-ui/c-goome">C</a> &nbsp;·&nbsp;
   <a href="https://github.com/goome-ui/python-goome">Python</a> &nbsp;·&nbsp;
@@ -29,7 +29,7 @@
 
 <p align="center">
   This is an OBS Studio plugin that adds a <b>goome overlay</b> source. It draws a <a href="https://github.com/goome-ui/c-goome">goome</a> ui offscreen at the size of the source and hands OBS a texture every frame, only copying the part that changed.<br>
-  Pick one of the built in widgets streamers always end up needing, or point it at a <code>.goome.json</code> you made in the <a href="https://goome-ui.github.io/docs/builder/">builder</a>.<br>
+  Pick one of the built in widgets streamers always end up needing, or point it at a <code>.goome.json</code> you made in the <a href="https://goome.wtf/builder/">builder</a>.<br>
   Right click the source and hit <b>Interact</b> and the buttons, toggles and sliders all work live, even while you're streaming.<br> <br>
   Do you like this project? If so, please let me know!
   <a href="https://sevvy-wevvy.com/discord">Discord</a>
@@ -162,7 +162,7 @@ After that, open OBS, add a source and pick <b>goome overlay</b>.
 <br>
 
 <p align="center">
-1. Open the <a href="https://goome-ui.github.io/docs/builder/">builder</a>, drag your ui together and hit <b>Save project (.goome.json)</b> in the menu<br>
+1. Open the <a href="https://goome.wtf/builder/">builder</a>, drag your ui together and hit <b>Save project (.goome.json)</b> in the menu<br>
 2. In the source settings set <b>Show</b> to <b>A builder file</b> and pick that file<br>
 3. Leave <b>Theme</b> on <b>From the builder file</b> to keep your builder theme, or pick a preset to swap it<br> <br>
 The motion keys (anim_ms, ease, hover_ms and the rest) come through as well. The builder saves ease as a number, if you edit the json by hand you can also write the name like <code>"spring"</code> or <code>"GOOME_EASE_BOUNCE"</code>.<br>
