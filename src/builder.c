@@ -623,6 +623,24 @@ static void load_plot(bn *n)
     }
 }
 
+static int fmt_ok(const char *f)
+{
+    int seen = 0;
+    for (; *f; f++) {
+        if (*f != '%') continue;
+        if (*++f == '%') continue;
+        if (seen++) return 0;
+        while (*f && strchr("-+ 0#", *f)) f++;
+        for (int k = 0; *f >= '0' && *f <= '9'; f++)
+            if (++k > 3) return 0;
+        if (*f == '.') f++;
+        for (int k = 0; *f >= '0' && *f <= '9'; f++)
+            if (++k > 3) return 0;
+        if (!*f || !strchr("fFeEgG", *f)) return 0;
+    }
+    return 1;
+}
+
 static int own_kind(int type)
 {
     switch (type) {
@@ -1167,7 +1185,7 @@ static void draw_node(bdoc *d, bn *n, int root)
         if (v->kind == BV_INT) ch = goome_ui_slider_int(u, label, &v->i, (int)pnum(n, "min", 0), (int)pnum(n, "max", 100));
         else {
             const char *fmt = pstr(n, "fmt", "");
-            ch = goome_ui_slider(u, label, &v->d, pnum(n, "min", 0), pnum(n, "max", 1), fmt[0] ? fmt : NULL);
+            ch = goome_ui_slider(u, label, &v->d, pnum(n, "min", 0), pnum(n, "max", 1), fmt[0] && fmt_ok(fmt) ? fmt : NULL);
         }
         if (ch) changed(d, n);
         hover(d, n);
