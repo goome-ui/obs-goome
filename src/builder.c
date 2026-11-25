@@ -572,7 +572,7 @@ static void load_table(bn *n)
     n->ncols = nc, n->nrows = nr;
     n->items = cols, n->nitems = nc;
     n->colw = calloc((size_t)nc, sizeof(double));
-    n->cells = calloc((size_t)(nc * (nr ? nr : 1)), sizeof(char *));
+    n->cells = calloc((size_t)nc * (size_t)(nr ? nr : 1), sizeof(char *));
     if (!n->colw || !n->cells) {
         n->ncols = n->nrows = 0;
         for (int i = 0; i < nr; i++) free(rows[i]);
@@ -592,7 +592,7 @@ static void load_table(bn *n)
             char *e = p ? strchr(p, ',') : NULL;
             if (e) *e = 0;
             while (p && *p == ' ') p++;
-            n->cells[r * nc + c] = p ? p : "";
+            n->cells[(size_t)r * (size_t)nc + (size_t)c] = p ? p : "";
             p = e ? e + 1 : NULL;
         }
     }
@@ -1222,7 +1222,7 @@ static void draw_node(bdoc *d, bn *n, int root)
                 goome_ui_table_row(u);
                 for (int c = 0; c < n->ncols; c++) {
                     if (c) goome_ui_table_next(u);
-                    goome_ui_label(u, "%s", n->cells[r * n->ncols + c]);
+                    goome_ui_label(u, "%s", n->cells[(size_t)r * (size_t)n->ncols + (size_t)c]);
                 }
             }
             goome_ui_table_end(u);
