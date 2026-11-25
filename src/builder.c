@@ -81,7 +81,7 @@ struct bdoc {
     const js **sec;
     int nsec;
     goome_theme *sec_th;
-    int sec_built;
+    char *sec_built;
     goome_bitmap placeholder;
     int placeholder_ok;
     int skipped;
@@ -878,7 +878,8 @@ bdoc *bdoc_parse(const char *text, size_t len, const char *dir, char *err, int e
     if (themes && themes->type == JS_ARR && themes->n) {
         d->sec = calloc((size_t)themes->n, sizeof(js *));
         d->sec_th = calloc((size_t)themes->n, sizeof(goome_theme));
-        if (d->sec && d->sec_th)
+        d->sec_built = calloc((size_t)themes->n, 1);
+        if (d->sec && d->sec_th && d->sec_built)
             for (int i = 0; i < themes->n; i++) d->sec[d->nsec++] = &themes->kids[i];
     }
     d->top = calloc((size_t)(root->n ? root->n : 1), sizeof(bn *));
@@ -964,6 +965,7 @@ void bdoc_free(bdoc *d)
     for (int i = 0; i < 3; i++) goome_font_free(d->fonts[i]);
     free(d->sec);
     free(d->sec_th);
+    free(d->sec_built);
     if (d->placeholder_ok) goome_bitmap_free(&d->placeholder);
     js_free(d->root);
     free(d->root);
@@ -1059,10 +1061,10 @@ static int push_style(bdoc *d, const js *st)
         int done = 0;
         for (int i = 0; i < d->nsec; i++)
             if (!strcmp(js_str(js_get(d->sec[i], "id"), ""), th)) {
-                if (!(d->sec_built & (1 << (i & 31)))) {
+                if (!d->sec_built[i]) {
                     d->sec_th[i] = *goome_ui_theme(u);
                     apply_theme_obj(d, &d->sec_th[i], d->sec[i], !strcmp(js_str(js_get(d->sec[i], "base"), "dark"), "light"));
-                    d->sec_built |= 1 << (i & 31);
+                    d->sec_built[i] = 1;
                 }
                 d->sec_th[i].font = goome_ui_theme(u)->font;
                 goome_ui_push_theme(u, &d->sec_th[i]), k++, done = 1;
