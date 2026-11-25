@@ -285,7 +285,7 @@ static double lh(goome_font *f, double size)
 
 static void fmt_num(char *out, size_t cap, double v)
 {
-    if (v == (double)(long long)v) snprintf(out, cap, "%lld", (long long)v);
+    if (v > -1e18 && v < 1e18 && v == (double)(long long)v) snprintf(out, cap, "%lld", (long long)v);
     else snprintf(out, cap, "%.2f", v);
 }
 
@@ -503,7 +503,7 @@ static void draw_goal(ov *o)
     double cur, target;
     goal_values(o, &cur, &target);
     double frac = target > 0 ? cur / target : 0;
-    if (frac < 0) frac = 0;
+    if (!(frac >= 0)) frac = 0;
     if (frac > 1) frac = 1;
     o->goal_shown = goome_ui_anim(u, "goal", frac, o->s.animations ? 600 : 0, (int)t->ease);
     char a[64], b[64], nums[140], pct[16];
@@ -693,7 +693,7 @@ static int moving(ov *o)
         double cur, target;
         goal_values(o, &cur, &target);
         double frac = target > 0 ? cur / target : 0;
-        frac = frac < 0 ? 0 : frac > 1 ? 1 : frac;
+        frac = !(frac >= 0) ? 0 : frac > 1 ? 1 : frac;
         return frac != o->goal_shown;
     }
     return 0;
