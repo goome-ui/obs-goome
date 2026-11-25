@@ -133,6 +133,8 @@ static void apply_theme(ov *o)
 
 static void load_doc(ov *o)
 {
+    goome_theme *t = goome_ui_theme(o->u);
+    t->font_heading = t->font_mono = t->font_small = NULL;
     if (o->doc) bdoc_free(o->doc);
     o->doc = NULL;
     if (!o->docf.path[0]) {
