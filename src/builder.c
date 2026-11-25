@@ -307,10 +307,11 @@ static const char *interp(bdoc *d, const char *s)
 typedef struct {
     const char *s;
     bdoc *d;
-    int bad;
+    int bad, depth;
 } ex;
 
 static double ex_tern(ex *e);
+static double ex_prim(ex *e);
 
 static void ex_sp(ex *e)
 {
@@ -332,7 +333,7 @@ static int ex_word(char c)
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '.';
 }
 
-static double ex_prim(ex *e)
+static double ex_atom(ex *e)
 {
     ex_sp(e);
     const char *s = e->s;
@@ -396,6 +397,15 @@ static double ex_prim(ex *e)
     }
     e->bad = 1;
     return 0;
+}
+
+static double ex_prim(ex *e)
+{
+    if (e->depth > 200) return e->bad = 1, 0;
+    e->depth++;
+    double v = ex_atom(e);
+    e->depth--;
+    return v;
 }
 
 static double ex_mul(ex *e)
@@ -466,9 +476,11 @@ static double ex_tern(ex *e)
 {
     double c = ex_or(e);
     if (!ex_is(e, "?")) return c;
+    if (e->depth > 200) return e->bad = 1, 0;
+    e->depth++;
     double a = ex_tern(e);
-    if (!ex_is(e, ":")) return e->bad = 1, 0;
-    double b = ex_tern(e);
+    double b = ex_is(e, ":") ? ex_tern(e) : (e->bad = 1, 0);
+    e->depth--;
     return c != 0 ? a : b;
 }
 
@@ -477,7 +489,7 @@ static int calc(bdoc *d, const js *v, double *out)
     if (!v) return 0;
     if (v->type == JS_NUM || v->type == JS_BOOL) return *out = v->num, 1;
     if (v->type != JS_STR) return 0;
-    ex e = {v->str, d, 0};
+    ex e = {v->str, d, 0, 0};
     ex_sp(&e);
     if (!*e.s) return 0;
     double r = ex_tern(&e);
