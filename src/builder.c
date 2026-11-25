@@ -1052,6 +1052,7 @@ static int push_style(bdoc *d, const js *st)
                     apply_theme_obj(d, &d->sec_th[i], d->sec[i], !strcmp(js_str(js_get(d->sec[i], "base"), "dark"), "light"));
                     d->sec_built |= 1 << (i & 31);
                 }
+                d->sec_th[i].font = goome_ui_theme(u)->font;
                 goome_ui_push_theme(u, &d->sec_th[i]), k++, done = 1;
                 break;
             }
